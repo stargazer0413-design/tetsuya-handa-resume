@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetsuya Handa - Interactive Resume</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --primary-light: #334155;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        header p.subtitle {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .contact-info a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .contact-info a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        /* Layout Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            body {
+                padding: 0;
+            }
+            .container {
+                border-radius: 0;
+            }
+        }
+
+        /* Section Styles */
+        section {
+            margin-bottom: 2rem;
+        }
+
+        h2.section-title {
+            font-size: 1.3rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2.section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1.3rem;
+            background-color: var(--accent);
+            border-radius: 2px;
+        }
+
+        /* Profile Block */
+        .profile-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            text-align: justify;
+        }
+
+        /* Clickable Accordion System */
+        .accordion-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .accordion-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background: #f1f5f9;
+        }
+
+        .accordion-header {
+            padding: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            user-select: none;
+        }
+
+        .header-main-info {
+            flex-grow: 1;
+            padding-right: 1rem;
+        }
+
+        .job-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .company-date {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .company-name {
+            font-weight: 500;
+            color: var(--accent);
+        }
+
+        .accordion-icon {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.03);
+            border-radius: 50%;
+        }
+
+        /* Content Collapse Animation */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: var(--card-bg);
+            border-top: 0 solid var(--border);
+        }
+
+        .accordion-item.active .accordion-content {
+            border-top: 1px solid var(--border);
+            /* JS dynamic height takes over, fallback just in case */
+            max-height: 1000px; 
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(45deg);
+            color: var(--accent);
+        }
+
+        .details-list {
+            list-style-type: none;
+            padding: 1.2rem;
+        }
+
+        .details-list li {
+            position: relative;
+            padding-left: 1.2rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .details-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .details-list li::before {
+            content: "•";
+            color: var(--accent);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        /* Skills Tags */
+        .skill-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .skill-group h3 {
+            font-size: 0.9rem;
+            color: var(--primary-light);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            background: #eff6ff;
+            color: var(--accent);
+            border: 1px solid #bfdbfe;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Education */
+        .edu-item {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .edu-degree {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .edu-school {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .edu-thesis {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: var(--bg);
+            padding: 0.5rem;
+            border-left: 2px solid var(--border);
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>TETSUYA HANDA</h1>
+        <p class="subtitle">Technical Writer & Structural Content Editor</p>
+        <div class="contact-info">
+            <span>📍 Takamatsu, Kagawa, Japan</span>
+            <span>✉️ <a href="mailto:tec0413@icloud.com">tec0413@icloud.com</a></span>
+        </div>
+    </header>
+
+    <div class="content-grid">
+        <!-- Main Column -->
+        <div class="main-col">
+            <section id="profile">
+                <h2 class="section-title">PROFILE</h2>
+                <p class="profile-text">
+                    Technical writer and content editor with an engineering background and a track record of translating complex, technical, and regulatory material into clear documentation. Six years of product-development and international technical-sales experience at Nikon, followed by two decades across regulated industries producing compliance and audit documentation. Currently applies AI-assisted workflows (Claude, ChatGPT, Gemini) to structure and communicate complex analytical research for international academic audiences.
+                </p>
+            </section>
+
+            <section id="research">
+                <h2 class="section-title">INDEPENDENT RESEARCH</h2>
+                
+                <!-- Open by default via active class -->
+                <div class="accordion-item active">
+                    <div class="accordion-header">
+                        <div class="header-main-info">
+                            <div class="job-title">Structural/Systemic Political-economy Analysis (SPA)</div>
+                            <div class="company-date">
+                                <span class="company-name">Independent Research Project</span>
+                                <span>2025 – Present</span>
+                            </div>
+                        </div>
+                        <div class="accordion-icon">＋</div>
+                    </div>
+                    <div class="accordion-content">
+                        <ul class="details-list">
+                            <li>Lead an independent, long-form economic-research project, using AI tools (Claude) to structure complex, multi-layered analysis into clear written material.</li>
+                            <li>Manuscripts submitted to multiple international peer-reviewed journals; currently under review.</li>
+                            <li>Published preprint on SSRN: “Money, Time, and the Limits of Abstraction: A Brief on Monetary Multiplicity and the Velocity Mismatch” (2026).</li>
+                            <li>Maintain ongoing correspondence with international researchers as part of this work.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="experience">
+                <h2 class="section-title">PROFESSIONAL EXPERIENCE</h2>
+
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="header-main-info">
+                            <div class="job-title">Product Development & International Technical Sales</div>
+                            <div class="company-date">
+                                <span class="company-name">Nikon Corporation, Information Equipment Division</span>
+                                <span>1994 – 2000</span>
+                            </div>
+                        </div>
+                        <div class="accordion-icon">＋</div>
+                    </div>
+                    <div class="accordion-content">
+                        <ul class="details-list">
+                            <li>Optimized manufacturing processes for magneto-optical (MO) disk production; evaluated and improved mold (stamper) design.</li>
+                            <li>Drafted strategic technical patents supporting new-product development.</li>
+                            <li>Delivered technical presentations and managed trade operations for clients across North America, Korea, Taiwan, and Australia.</li>
+                            <li>Managed safety-standard certification submissions in the CS Promotion Office.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="header-main-info">
+                            <div class="job-title">Regulatory Documentation & Business Planning</div>
+                            <div class="company-date">
+                                <span class="company-name">Fuji Sangyo Co., Ltd., Planning & Development / Operations</span>
+                                <span>2000 – 2003</span>
+                            </div>
+                        </div>
+                        <div class="accordion-icon">＋</div>
+                    </div>
+                    <div class="accordion-content">
+                        <ul class="details-list">
+                            <li>Produced regulatory compliance documentation under Japan's Pharmaceutical Affairs Law for new product launches.</li>
+                            <li>Liaised directly with government regulatory offices; led sales planning, market research, and route development.</li>
+                            <li>Directed labor-policy documentation, including work-rule revisions coordinated with the Labor Standards Inspection Office.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="header-main-info">
+                            <div class="job-title">Documentation, Compliance & Facility Operations</div>
+                            <div class="company-date">
+                                <span class="company-name">Panasonic / Minami Medical / Sun-Wing</span>
+                                <span>2005 – 2024</span>
+                            </div>
+                        </div>
+                        <div class="accordion-icon">＋</div>
+                    </div>
+                    <div class="accordion-content">
+                        <ul class="details-list">
+                            <li><strong>Panasonic Communications:</strong> managed new-component evaluation and approval; authored RoHS compliance documentation.</li>
+                            <li><strong>Minami Medical Consultant:</strong> prepared audit documentation and coordinated directly with prefectural and municipal regulators.</li>
+                            <li><strong>Sun-Wing Co., Ltd.:</strong> served as facility administrator, overseeing billing operations, vendor documentation, and cross-department coordination.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+
+        <!-- Side Column -->
+        <div class="side-col">
+            <section id="skills">
+                <h2 class="section-title">SKILLS</h2>
+                
+                <div class="skill-group">
+                    <h3>Core Expertise</h3>
+                    <div class="tags">
+                        <span class="tag">Technical Documentation</span>
+                        <span class="tag">Regulatory Compliance</span>
+                        <span class="tag">Structural Writing</span>
+                        <span class="tag">Analytical Writing</span>
+                    </div>
+                </div>
+
+                <div class="skill-group">
+                    <h3>AI Workflows</h3>
+                    <div class="tags">
+                        <span class="tag">Claude</span>
+                        <span class="tag">ChatGPT</span>
+                        <span class="tag">Gemini</span>
+                        <span class="tag">AI-Assisted Research</span>
+                    </div>
+                </div>
+
+                <div class="skill-group">
+                    <h3>Global & Communication</h3>
+                    <div class="tags">
+                        <span class="tag">Business English</span>
+                        <span class="tag">Cross-cultural Tech Comm</span>
+                        <span class="tag">Client Facing</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="education">
+                <h2 class="section-title">EDUCATION</h2>
+                
+                <div class="edu-item">
+                    <div class="edu-degree">M.Eng., Mechanical Engineering</div>
+                    <div class="edu-school">The University of Tokushima, Graduate School of Engineering (1994)</div>
+                    <div class="edu-thesis">Thesis: Mathematical analysis using neural networks (verification of structural defect identification using AE data)</div>
+                </div>
+
+                <div class="edu-item">
+                    <div class="edu-degree">B.Eng., Mechanical Engineering</div>
+                    <div class="edu-school">The University of Tokushima (1992)</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+        // Set max-height for elements that are initialized as active
+        document.querySelectorAll('.accordion-item.active').forEach(item => {
+            const content = item.querySelector('.accordion-content');
+            content.style.maxHeight = content.scrollHeight + 'px';
+        });
+
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const item = header.parentElement;
+                const content = item.querySelector('.accordion-content');
+                
+                if (item.classList.contains('active')) {
+                    // Close item
+                    content.style.maxHeight = '0px';
+                    item.classList.remove('active');
+                } else {
+                    // Open item
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // Re-calculate heights on window resize to ensure fluid layouts don't break
+        window.addEventListener('resize', () => {
+            document.querySelectorAll('.accordion-item.active').forEach(item => {
+                const content = item.querySelector('.accordion-content');
+                content.style.maxHeight = content.scrollHeight + 'px';
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
